@@ -123,6 +123,33 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "Particles.html",
+			"settings":
+			{
+				"buffer_size": 189,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Particles.js",
+			"settings":
+			{
+				"buffer_size": 1318,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/Rikin/Downloads/Temp/p5.js",
+			"settings":
+			{
+				"buffer_size": 2672467,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -283,12 +310,10 @@
 		"side_bar_visible": false,
 		"status_bar_visible": false
 	},
-	"expanded_folders":
-	[
-		"/C/Users/Rikin/Documents/Code/JavaScript Fun Stuff"
-	],
 	"file_history":
 	[
+		"/C/Users/Rikin/Documents/Code/JavaScript Fun Stuff/ParticlesTest.html",
+		"/C/Users/Rikin/Documents/Code/JavaScript Fun Stuff/ParticlesTest.js",
 		"/C/Users/Rikin/Documents/Code/ResourcesGame/gamescript.js",
 		"/C/Users/Rikin/Documents/Code/Pong/pong.html",
 		"/C/Users/Rikin/Documents/Code/Pong/pong.js",
@@ -400,7 +425,7 @@
 	],
 	"find":
 	{
-		"height": 50.0
+		"height": 45.0
 	},
 	"find_in_files":
 	{
@@ -414,6 +439,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"requestAnimation",
+			"requestAni",
+			"request",
 			"64"
 		],
 		"highlight": false,
@@ -432,8 +460,104 @@
 	"groups":
 	[
 		{
+			"selected": 2,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "Particles.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 189,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								189,
+								189
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "Particles.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1318,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1256,
+								1256
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 660.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/C/Users/Rikin/Downloads/Temp/p5.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2672467,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2047564,
+								2047564
+							]
+						],
+						"settings":
+						{
+							"WordCount":
+							{
+								"changes": -1,
+								"modified": true,
+								"selection": true,
+								"status": -1,
+								"syntax": "javascript"
+							},
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1029612.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
 			]
 		}
 	],
