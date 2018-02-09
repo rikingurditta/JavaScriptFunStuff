@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 var canvas = document.createElement('canvas');
 var context = canvas.getContext('2d');
 canvas.width = 768;
@@ -5,10 +7,11 @@ canvas.height = 512;
 document.body.appendChild(canvas);
 
 var seizureMode = !confirm('Normal mode?');
+console.log(seizureMode);
 
 var p1 = {
     x: 0,
-    y: canvas.height / 2,
+    y: canvas.height / 2 - 32,
     yspeed: 384,
     width: 10,
     height: 64,
@@ -16,14 +19,13 @@ var p1 = {
 };
 
 var p2 = {
-    x: 0,
-    y: canvas.height / 2,
+    x: canvas.width - 10,
+    y: canvas.height / 2 - 32,
     yspeed: 384,
     width: 10,
     height: 64,
     score: 0
 };
-p2.x = canvas.width - p2.width;
 
 var ball = {
     x: canvas.width / 2,
@@ -80,18 +82,16 @@ var update = function (dt) {
             ball.yvel = - ball.maxspeed * Math.sin((p2.y + p2.height / 2 - ball.y) / (p2.height / 2) * Math.PI / 3);
             ball.xvel = - ball.maxspeed * Math.cos((p2.y + p2.height / 2 - ball.y) / (p2.height / 2) * Math.PI / 3);
         }
-    } else if (ball.x < 0) {
+    } else if (ball.x + ball.width < 0) {
         p2.score += 1;
         reset(1);
     } else if (ball.x > canvas.width) {
         p1.score += 1;
         reset(-1);
     }
-    if (ball.y <= 0) {
-        ball.y = 0;
+    if (ball.yvel < 0 && ball.y <= 0) {
         ball.yvel *= -1;
-    } else if (ball.y >= canvas.height) {
-        ball.y = canvas.height;
+    } else if (ball.yvel > 0 && ball.y + ball.height > canvas.height) {
         ball.yvel *= -1;
     }
     ball.x += ball.xvel * dt;
@@ -100,9 +100,9 @@ var update = function (dt) {
         ball.maxspeed += 15 * dt;
     }
     
-//    p2.y += p2.yspeed * Math.sign(ball.y - p2.y) * dt; ssshh super secret ai
+    // p2.y += p2.yspeed * Math.sign(ball.y - p2.y) * dt; // ssshh super secret ai
     
-    bgHue += 1024 * dt
+    bgHue = (bgHue + ball.maxspeed * dt) % 256;
 };
 
 var paddleCollision = function () {
@@ -118,11 +118,11 @@ var paddleCollision = function () {
 context.textAlign = "center";
 context.font = "16px Consolas";
 var render = function () {
-//    context.fillStyle = '#000000';
-    if (seizureMode) {
-        context.fillStyle = 'hsl(' + bgHue + ', 100%, 62.5%)';
-    }
     context.clearRect(0, 0, canvas.width, canvas.height);
+    if (seizureMode) {
+        context.fillStyle = `hsl(${bgHue}, 100%, 62.5%)`;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    }
     context.fillStyle = '#FFFFFF';
     context.fillRect(p1.x, p1.y, p1.width, p1.height);
     context.fillRect(p2.x, p2.y, p2.width, p2.height);
