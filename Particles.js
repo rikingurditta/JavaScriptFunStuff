@@ -13,7 +13,7 @@ var dim = 2; // height/width of dot (square)
 
 ice[0] = [w / 2, h / 2, 1]; // centre the first dot
 for (let i = 1; i < n; i += 1) {
-	ice[i] = [w * 1 / 2 * (Math.random() - 1 / 2) + w / 2, h * 1 / 2 * (Math.random() - 1 / 2) + h / 2, 0]; // randomly decide the rest
+	ice[i] = [h * 1 / 2 * (Math.random() - 1 / 2) + w / 2, h * 1 / 2 * (Math.random() - 1 / 2) + h / 2, 0]; // randomly decide the rest
 	// ice[i] = [Math.floor(Math.random() * w), Math.floor(Math.random() * h), 0]; // randomly decide the rest
 }
 
@@ -33,7 +33,7 @@ function update() {
 	}
 	for (let i = min; i >= 0 && !newmin; i -= 1) {
 		if (ice [i][0] <= ice[min][0] - 2 * dim) {
-			newmin = i;
+			newmin = i + 1;
 		}
 	}
 	
@@ -48,7 +48,7 @@ function update() {
 			newmax = i;
 		}
 	}
-	
+
 	for (let i = newmin; i < newmax - 1; i += 1) {
 		// if (ice[i][2] == 1) { // doesn't work for some reason, need to check if either is stuck rather than just ith
 		for (let j = i + 1; j < newmax; j += 1) {
