@@ -35,7 +35,6 @@ function xmlToArray(text) {
 	for (let i = 0; i < colNames.length; i += 1) {
 		columns[i] = xmlDom.getElementsByTagName("ColumnCells")[i].childNodes[0].nodeValue.split("\n");
 	}
-	console.log(columns[0]);
 
 	for (let i = 1; i < columns[0].length; i += 1) {
 		out[i] = [];
@@ -59,5 +58,4 @@ function updateDownload(text) {
 	document.getElementById("download").href = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
 	document.getElementById("download").classList.remove("disabled");
 	document.getElementById("download").download = input.files[0].name + ".csv";
-	console.log("finished!");
 }
