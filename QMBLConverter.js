@@ -1,14 +1,13 @@
 var input = document.getElementById("input");
+var output = "";
 
 // called when the submit button is clicked
 function process() {
-	// for (let i = 0; i < input.files.length; i += 1) {
-		var file = input.files[0]
-		var reader = new FileReader();
+	var file = input.files[0]
+	var reader = new FileReader();
 
-		waitForTextReadComplete(reader);
-		reader.readAsText(file);
-	// }
+	waitForTextReadComplete(reader);
+	reader.readAsText(file);
 }
 
 // changes the reader's onloadend function so that it does stuff when it's done loading
@@ -45,13 +44,19 @@ function xmlToArray(text) {
 		}
 	}
 
-	console.log(out);
+	updateDownload(arrayToCSV(out));
 }
 
 function arrayToCSV(array) {
 	let outArr = [];
 	for (let i = 0; i < array.length; i += 1) {
-		outArr[i] = array[i].join(",");
+		outArr[i] = array[i].join();
 	}
 	return outArr.join("\n");
+}
+
+function updateDownload(text) {
+	document.getElementById("download").href = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
+	document.getElementById("download").classList.remove("disabled");
+	console.log("finished!");
 }

@@ -3,15 +3,16 @@
 <head>
 	<meta charset="utf-8"/>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:800i" rel="stylesheet">
 </head>
-<body>
+<body style="background-color: #FFAAAA">
 	<div class="container">
-		<h2 class="text-primary text-center">QMBL Converter</h1>
-		<div class="row">
-			<input id="input" type="file" multiple class="form-control-file.">
-		</div>
-		<div class="row">
-			<button id="submit" onclick="process();" class="btn btn-primary">Submit</button>
+		<h2 class="text-info text-center" style="font-family: Open Sans; padding: 5% 0% 0% 0%;">QMBL Converter
+		</h1>
+		<div style="margin: 0 auto">
+			<input id="input" type="file" class="form-control-file.">
+			<button id="submit" onclick="process();" class="btn btn-info">Submit</button>
+			<a id="download" href="#" target="_blank" class="btn btn-success disabled">Download</button>
 		</div>
 	</div>
 </body>
