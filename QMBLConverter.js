@@ -58,5 +58,6 @@ function arrayToCSV(array) {
 function updateDownload(text) {
 	document.getElementById("download").href = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
 	document.getElementById("download").classList.remove("disabled");
+	document.getElementById("download").download = input.files[0].name + ".csv";
 	console.log("finished!");
 }
