@@ -52,7 +52,7 @@ function update() {
 
 
 function render () {
-	context.clear\Rect(0, 0, w, h); // reset the canvas each time
+	context.clearRect(0, 0, w, h); // reset the canvas each time
 	context.fillStyle = 'black';
 	allIceSet.forEach(function(nonStuckIce) {
 		context.fillRect(nonStuckIce.x, nonStuckIce.y, dim, dim);
