@@ -20,7 +20,6 @@ var n = 4096; // number of dots
 var dim = 2; // height/width of dot (square)
 
 var firstStuck = new Ice(w / 2, h / 2);
-firstStuck.iceSet = allIceSet;
 var stuck = [firstStuck];
 var toRemove = new Set([]);
 
@@ -33,7 +32,7 @@ for (let i = 0; i < n; i += 1) {
 
 function update() {
 	stuck.forEach(function(stuckIce) {
-		stuckIce.iceSet.forEach(function(nonStuckIce) {
+		allIceSet.forEach(function(nonStuckIce) {
 			if (stuckIce.x <= nonStuckIce.x + dim && stuckIce.x + dim >= nonStuckIce.x && stuckIce.y <= nonStuckIce.y + dim && stuckIce.y + dim >= nonStuckIce.y) { // and if they collide
 				stuck.push(nonStuckIce);
 				toRemove.add(nonStuckIce);
