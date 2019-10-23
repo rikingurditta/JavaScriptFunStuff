@@ -7,48 +7,60 @@ var w = canvas.width = 768;
 var h = canvas.height = 768;
 document.body.appendChild(canvas);
 
+class Ice {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+}
+
+var allIceSet = new Set([]); // array of dots
+
 var n = 4096; // number of dots
-var ice = []; // array of dots
 var dim = 2; // height/width of dot (square)
 
-ice[0] = [w / 2, h / 2, 1]; // centre the first dot
-for (let i = 1; i < n; i += 1) {
-	ice[i] = [Math.floor(Math.random() * w * 1 / 2) + w / 4, Math.floor(Math.random() * h * 1 / 2) + h / 4, 0]; // randomly decide the rest
-	// ice[i] = [Math.floor(Math.random() * w), Math.floor(Math.random() * h), 0]; // randomly decide the rest
+var firstStuck = new Ice(w / 2, h / 2);
+firstStuck.iceSet = allIceSet;
+var stuck = [firstStuck];
+var toRemove = new Set([]);
+
+for (let i = 0; i < n; i += 1) {
+	// randomly decide the rest
+	allIceSet.add(new Ice(Math.floor(Math.random() * w * 1 / 2) + w / 4,
+		Math.floor(Math.random() * h * 1 / 2) + h / 4));
 }
 
 
 function update() {
-	for (let i = 0; i < n - 1; i += 1) {
-		// if (ice[i][2] == 1) { // doesn't work for some reason, need to check if either is stuck rather than just ith
-		for (let j = i + 1; j < n; j += 1) {
-			if (ice[i][2] == 1 ^ ice[j][2] == 1) { // if either dot is stuck
-				if (ice[i][0] <= ice[j][0] + dim && ice[i][0] + dim >= ice[j][0] && ice[i][1] <= ice[j][1] + dim && ice[i][1] + dim >= ice[j][1]) { // and if they collide
-					ice[i][2] = ice[j][2] = 1; // they are both stuck
-				}
+	stuck.forEach(function(stuckIce) {
+		stuckIce.iceSet.forEach(function(nonStuckIce) {
+			if (stuckIce.x <= nonStuckIce.x + dim && stuckIce.x + dim >= nonStuckIce.x && stuckIce.y <= nonStuckIce.y + dim && stuckIce.y + dim >= nonStuckIce.y) { // and if they collide
+				stuck.push(nonStuckIce);
+				toRemove.add(nonStuckIce);
 			}
-		}
-	}
+		})
+	})
+	toRemove.forEach(function(iceToRemove) {
+		allIceSet.delete(iceToRemove);
+	});
 
-	for (let i = 1; i < n; i += 1) {
-		if (ice[i][2] == 0) { // if a dot is not stuck
-			ice[i][0] += Math.floor(Math.random() * 3 - 1); // move it randomly
-			ice[i][1] += Math.floor(Math.random() * 3 - 1);
-		}
-	}
+	allIceSet.forEach(function(nonStuckIce) {
+		nonStuckIce.x += Math.floor(Math.random() * 3 - 1); // move it randomly
+		nonStuckIce.y += Math.floor(Math.random() * 3 - 1);
+	});
 }
 
 
 function render () {
-	context.clearRect(0, 0, w, h); // reset the canvas each time
-	for (let i = 0; i < n; i += 1) {
-		if (ice[i][2] == 1) {
-			context.fillStyle = 'red';
-		} else {
-			context.fillStyle = 'black';
-		}
-		context.fillRect(ice[i][0], ice[i][1], dim, dim);
-	}
+	context.clear\Rect(0, 0, w, h); // reset the canvas each time
+	context.fillStyle = 'black';
+	allIceSet.forEach(function(nonStuckIce) {
+		context.fillRect(nonStuckIce.x, nonStuckIce.y, dim, dim);
+	});
+	context.fillStyle = 'red';
+	stuck.forEach(function(stuckIce) {
+		context.fillRect(stuckIce.x, stuckIce.y, dim, dim);
+	});
 }
 
 
