@@ -1,5 +1,41 @@
 var EPSILON = "ε";
 
+
+class NSet extends Set {
+	// check if two sets are equal, i.e. they have the same elements
+	equals(set2) {
+		if (this.size != set2.size) {
+			return false;
+		}
+		this.forEach(function(item) {
+			if (!set2.has(item)) {
+				return false;
+			}
+		});
+		let set1 = this;
+		set2.forEach(function(item) {
+			if (!set1.has(item)) {
+				return false;
+			}
+		});
+		return true;
+	}
+
+
+	// return a new set with all the elements from both sets
+	union(set2) {
+		return new NSet([...this, ...set2]);
+	}
+
+
+	// mutate this set to add all elements of set2
+	addAll(set2) {
+		let set1 = this;
+		set2.forEach((item) => this.add(item));
+	}
+}
+
+
 class NFAState {
 	// A class for a state in a nondeterministic finite automaton
 
@@ -15,7 +51,7 @@ class NFAState {
 	// return the states that are reached by transitioning based on symbol
 	transition(symbol) {
 		if (!(symbol in this.transitionDict)) {
-			this.transitionDict[symbol] = new Set();
+			this.transitionDict[symbol] = new NSet();
 		}
 		return this.transitionDict[symbol];
 	}
@@ -32,7 +68,7 @@ class NFAState {
 		if (symbol in this.transitionDict) {
 			this.transitionDict[symbol].add(state);
 		} else {
-			this.transitionDict[symbol] = new Set([state]);
+			this.transitionDict[symbol] = new NSet([state]);
 		}
 	}
 }
@@ -51,19 +87,18 @@ class NFA {
 	// check if an accept state is reached by this NFA after transitioning based on w
 	checkString(w) {
 		// return whether or not w is accepted
-		let states = new Set([this.start])
+		let states = new NSet([this.start])
 		// do initial epsilon transitions get to all starting states
 		states = this.doAllEpsilonTransitions(states);
 
-		let nextStates = new Set();
+		let nextStates = new NSet();
 
 		for (let i = 0; i < w.length; i += 1) {
 			// transition based on current symbol
 			nextStates = this.transitionStates(states, w[i]);
 
 			// add epsilon transition for current states to nextStates
-			let epsilonStates = this.transitionStates(states, EPSILON);
-			nextStates = setUnion(nextStates, epsilonStates);
+			nextStates.addAll(this.transitionStates(states, EPSILON));
 
 			// do all possible epsilon transitions
 			nextStates = this.doAllEpsilonTransitions(nextStates);
@@ -85,9 +120,9 @@ class NFA {
 	// transition all states in given set based on given symbol
 	transitionStates(states, symbol) {
 		// return set of states reached
-		let nextStates = new Set();
+		let nextStates = new NSet();
 		states.forEach(function(state) {
-			nextStates = setUnion(nextStates, state.transition(symbol));
+			nextStates.addAll(state.transition(symbol));
 		});
 		return nextStates;
 	}
@@ -98,49 +133,24 @@ class NFA {
 		// return states (arg) as well as all states reached by doing all possible epsilon transitions
 		// does not mutate states
 		// e.g. if the NFA is qO -e-> q1 -e-> q2 and states is {q0}, return {q0, q1, q2}
-		let tempStates = new Set();
-		while (!setEq(tempStates, states)) {
+		let tempStates = new NSet();
+		while (!tempStates.equals(states)) {
 			tempStates = states;
-			let epsilonStates = this.transitionStates(states, EPSILON);
-			states = setUnion(states, epsilonStates);
+			states = states.union(this.transitionStates(states, EPSILON));
 		}
 		return states;
 	}
 
 	// return set with names of all states
 	stateNames(states) {
-		let names = new Set();
-		states.forEach(function(state) {
-			names.add(state.name);
-		});
+		let names = new NSet();
+		states.forEach(
+			(state) => names.add(state.name));
 		return names;
 	}
 }
 
 
-// check if two sets are equal, i.e. they have the same elements
-function setEq(set1, set2) {
-	if (set1.size != set2.size) {
-		return false;
-	}
-	set1.forEach(function(item) {
-		if (!set2.has(item)) {
-			return false;
-		}
-	});
-	set2.forEach(function(item) {
-		if (!set1.has(item)) {
-			return false;
-		}
-	});
-	return true;
-}
-
-
-// return a new set with all the elements from both sets
-function setUnion(set1, set2) {
-	return new Set([...set1, ...set2]);
-}
 
 // example NFA, which accepts /1*(0011*|011*)*/
 // var q0 = new NFAState("q0", {}, true);
