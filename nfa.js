@@ -1,7 +1,8 @@
 var EPSILON = "ε";
 
-
+// extending the functionality of the builtin Set
 class NSet extends Set {
+	
 	// check if two sets are equal, i.e. they have the same elements
 	equals(set2) {
 		if (this.size != set2.size) {
@@ -79,37 +80,39 @@ class NFA {
 
 
 	// create a new NFA, whose starting state is start
-	constructor(start) {
+	constructor(start, states) {
 		this.start = start;
+		this.states = states;
 	}
 
 
 	// check if an accept state is reached by this NFA after transitioning based on w
 	checkString(w) {
 		// return whether or not w is accepted
-		let states = new NSet([this.start])
+		let currentStates = new NSet([this.start])
 		// do initial epsilon transitions get to all starting states
-		states = this.doAllEpsilonTransitions(states);
+		currentStates = NFA.doAllEpsilonTransitions(currentStates);
 
 		let nextStates = new NSet();
 
 		for (let i = 0; i < w.length; i += 1) {
 			// transition based on current symbol
-			nextStates = this.transitionStates(states, w[i]);
+			nextStates = NFA.transitionStates(currentStates, w[i]);
 
 			// add epsilon transition for current states to nextStates
-			nextStates.addAll(this.transitionStates(states, EPSILON));
+			nextStates.addAll(NFA.transitionStates(currentStates, EPSILON));
 
 			// do all possible epsilon transitions
-			nextStates = this.doAllEpsilonTransitions(nextStates);
+			nextStates = NFA.doAllEpsilonTransitions(nextStates);
 
-			states = nextStates;
+			currentStates = nextStates;
+			// console.log(w[i], NFA.stateNames(currentStates));
 		}
-		// console.log(this.stateNames(states));
+		// console.log(NFA.stateNames(currentStates));
 
 		// if any state is an accepting state, then the NFA accepts the string
 		let accepting = false;
-		states.forEach(function(state) {
+		currentStates.forEach(function(state) {
 			if (state.result()) {
 				accepting = true;
 			}
@@ -118,7 +121,7 @@ class NFA {
 	}
 
 	// transition all states in given set based on given symbol
-	transitionStates(states, symbol) {
+	static transitionStates(states, symbol) {
 		// return set of states reached
 		let nextStates = new NSet();
 		states.forEach(function(state) {
@@ -129,43 +132,56 @@ class NFA {
 
 
 	// do epsilon transitions until no new state is reached
-	doAllEpsilonTransitions(states) {
+	static doAllEpsilonTransitions(states) {
 		// return states (arg) as well as all states reached by doing all possible epsilon transitions
 		// does not mutate states
 		// e.g. if the NFA is qO -e-> q1 -e-> q2 and states is {q0}, return {q0, q1, q2}
 		let tempStates = new NSet();
 		while (!tempStates.equals(states)) {
 			tempStates = states;
-			states = states.union(this.transitionStates(states, EPSILON));
+			states = states.union(NFA.transitionStates(states, EPSILON));
 		}
 		return states;
 	}
 
-	// return set with names of all states
-	stateNames(states) {
+	// return set with names of states
+	static stateNames(states) {
 		let names = new NSet();
 		states.forEach(
 			(state) => names.add(state.name));
 		return names;
 	}
+
+
+	// return set with names of all states in this NFA
+	getStateNames() {
+		let names = new NSet();
+		this.states.forEach(
+			(state) => names.add(state.name));
+		return names;
+	}
+
+
+	// return set of all accepting states in this NFA
+	getAcceptingStates() {
+		let out = new NSet();
+		this.states.forEach(function(state) {
+			if (state.result()) {
+				out.add(state);
+			}
+		});
+		return out;
+	}
+
+
+	// mutating append function
+	append(other) {
+		// "concatenates" the NFAs, aka makes the accepting states of this
+		// lead to the starting state of otehr
+		this.getAcceptingStates().forEach(function(state) {
+			state.accepting = false;
+			state.addTransition(EPSILON, other.start);
+		});
+		this.states.addAll(other.states);
+	}
 }
-
-
-
-// example NFA, which accepts /1*(0011*|011*)*/
-// var q0 = new NFAState("q0", {}, true);
-// var q1 = new NFAState("q1", {}, false);
-// var q2 = new NFAState("q2", {}, false);
-// q0.addTransition("0", q1);
-// q0.addTransition("1", q0);
-// q0.addTransition(EPSILON, q1);
-// q1.addTransition("0", q2);
-// q1.addTransition("1", q1);
-// q2.addTransition("1", q0);
-// let nfa = new NFA(q0);
-
-// console.log(nfa.checkString("1") + " should be true");
-// console.log(nfa.checkString("1001111111011") + " should be true");
-// console.log(nfa.checkString("101101110010011001") + " should be true");
-// console.log(nfa.checkString("100100") + " should be false");
-// console.log(nfa.checkString("100100011") + " should be false");
