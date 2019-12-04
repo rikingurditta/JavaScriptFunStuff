@@ -8,9 +8,11 @@ var h = canvas.height = 768;
 document.body.appendChild(canvas);
 
 class Ice {
-	constructor(x, y) {
+	constructor(x, y, width, height) {
 		this.x = x;
 		this.y = y;
+		this.width = dim;
+		this.height = dim;
 	}
 }
 
@@ -19,14 +21,14 @@ var allIceSet = new Set([]); // array of dots
 var n = 4096; // number of dots
 var dim = 2; // height/width of dot (square)
 
-var firstStuck = new Ice(w / 2, h / 2);
+var firstStuck = new Ice(w / 2, h / 2, dim, dim);
 var stuck = [firstStuck];
 var toRemove = new Set([]);
 
 for (let i = 0; i < n; i += 1) {
 	// randomly decide the rest
 	allIceSet.add(new Ice(Math.floor(Math.random() * w * 1 / 2) + w / 4,
-		Math.floor(Math.random() * h * 1 / 2) + h / 4));
+		Math.floor(Math.random() * h * 1 / 2) + h / 4), dim, dim);
 }
 
 
@@ -39,9 +41,7 @@ function update() {
 			}
 		})
 	})
-	toRemove.forEach(function(iceToRemove) {
-		allIceSet.delete(iceToRemove);
-	});
+	toRemove.forEach((iceToRemove) => allIceSet.delete(iceToRemove));
 
 	allIceSet.forEach(function(nonStuckIce) {
 		nonStuckIce.x += Math.floor(Math.random() * 3 - 1); // move it randomly
