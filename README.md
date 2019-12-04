@@ -1,8 +1,8 @@
 # JavaScriptFunStuff
 Fun JavaScript stuff that I've made
 
-Pong: [https://rikingurditta.github.io/JavaScriptFunStuff/pong](https://rikingurditta.github.io/JavaScriptFunStuff/pong)
+[Pong](./pong/pong.html)
 
-Particles: [https://rikingurditta.github.io/JavaScriptFunStuff/Particles](https://rikingurditta.github.io/JavaScriptFunStuff/Particles)
+[Particles](./particles/Particles.html)
 
-QMBL to CSV Converter: [https://rikingurditta.github.io/JavaScriptFunStuff/QMBLConverter](https://rikingurditta.github.io/JavaScriptFunStuff/QMBLConverter)
+[QMBL to CSV Converter](./qmbl/QMBLConverter.html)
