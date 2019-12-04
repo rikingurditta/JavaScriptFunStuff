@@ -31,7 +31,7 @@ class RESymbol extends Regex {
 }
 
 
-// parsed regular expression 
+// parsed regular expression for a sequence of regexes
 class RESequence extends Regex {
 	// create a new sequence of regexes
 	constructor(reList) {
@@ -51,5 +51,65 @@ class RESequence extends Regex {
 			start.append(this.subs[i].getNFA());
 		}
 		return start;
+	}
+}
+
+
+// parsed regular expression for applying {num} to a regex,
+// aka repeating a regex num times
+class RERepeat extends Regex {
+	// create a new repeat regex
+	constructor(regex, num) {
+		super();
+		this.inside = regex;
+		this.num = num;
+	}
+
+	// get the NFA which accepts num repetitions of the inside regex
+	getNFA() {
+		let reList = [];
+		for (int i = 0; i < this.num; i += 1) {
+			reList.push(this.inside);
+		}
+		return new RESequence(reList);
+	}
+}
+
+
+// parsed regular expression for applying * to a regex,
+class REStar extends Regex {
+	// create a new star regex
+	constructor(regex) {
+		super();
+		this.inside = regex;
+	}
+
+
+	// get the NFA which accepts arbitrary repetitions of the inside regex
+	getNFA() {
+		let start = new NFAState("*start", {}, true);
+		let out = new NFA(start, new NSet([start]));
+		let insideNFA = this.inside.getNFA();
+		insideNFA.getAcceptingStates().forEach(function(state) {
+			state.addTransition(insideNFA.start)
+		});
+		out.append(insideNFA);
+		return out;
+	}
+}
+
+
+// parsed regular expression for applying * to a regex
+class REPlus extends Regex {
+	// create a new star regex
+	constructor(regex) {
+		super();
+		this.inside = regex;
+	}
+
+
+	// get the NFA which accepts arbitrary repetitions of the inside regex
+	getNFA() {
+		return new RESequence([this.inside, new REStar(this.inside)]).getNFA();
 	}
 }

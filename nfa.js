@@ -2,7 +2,6 @@ var EPSILON = "ε";
 
 // extending the functionality of the builtin Set
 class NSet extends Set {
-	
 	// check if two sets are equal, i.e. they have the same elements
 	equals(set2) {
 		if (this.size != set2.size) {
@@ -37,10 +36,8 @@ class NSet extends Set {
 }
 
 
+// A class for a state in a nondeterministic finite automaton
 class NFAState {
-	// A class for a state in a nondeterministic finite automaton
-
-
 	// create a new state, which is either accepting or non-accepting
 	constructor(name, transitionDict, accepting) {
 		this.name = name;
@@ -75,10 +72,8 @@ class NFAState {
 }
 
 
+// a class for a nondeterministic finite automaton
 class NFA {
-	// a class for a nondeterministic finite automaton
-
-
 	// create a new NFA, whose starting state is start
 	constructor(start, states) {
 		this.start = start;
@@ -177,7 +172,7 @@ class NFA {
 	// mutating append function
 	append(other) {
 		// "concatenates" the NFAs, aka makes the accepting states of this
-		// lead to the starting state of otehr
+		// lead to the starting state of other
 		this.getAcceptingStates().forEach(function(state) {
 			state.accepting = false;
 			state.addTransition(EPSILON, other.start);
