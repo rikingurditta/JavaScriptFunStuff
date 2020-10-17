@@ -50,13 +50,18 @@ function update() {
     } else if (keysDown[40] && headDir.y == 0) {
         headDir = new Vec2(0, 1);
     }
+    if (keysDown[27]) {
+        clearInterval(mainInterval);
+    }
     for (let i = dirs.length - 1; i > 0; i--) {
         dirs[i] = dirs[i - 1];
     }
     dirs[0] = headDir;
+    oldLastPos = snake[snake.length - 1];
     for (let i = 0; i < snake.length; i++) {
-        snake[i].x = ((snake[i].x + dirs[i].x % width) + width) % width;
-        snake[i].y = ((snake[i].y + dirs[i].y % height) + height) % height;
+        let x = ((snake[i].x + dirs[i].x % width) + width) % width;
+        let y = ((snake[i].y + dirs[i].y % height) + height) % height;
+        snake[i] = new Vec2(x, y);
     }
     let head = snake[0];
     let tail = snake[snake.length - 1]
@@ -67,7 +72,8 @@ function update() {
             let l = snake.length - 1;
             let x = tail.x - dirs[l].x;
             let y = tail.y - dirs[l].y;
-            snake.push(new Vec2(x, y));
+            // snake.push(new Vec2(x, y));
+            snake.push(oldLastPos);
             dirs.push([dirs[0]]);
         } else {
             fi++;
@@ -79,11 +85,12 @@ function update() {
         while (overlaps) {
             newFood = new Vec2(Math.floor(Math.random() * width), Math.floor(Math.random() * height));
             overlaps = false;
-            for (let s of snake) {
-                if (newFood.equals(s)) {
+            for (let s of snake)
+                if (newFood.equals(s))
                     overlaps = true;
-                }
-            }
+            for (let f of food)
+                if (newFood.equals(f))
+                    overlaps = true;
         }
         food.push(newFood);
     }
