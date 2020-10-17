@@ -6,3 +6,5 @@ Fun JavaScript stuff that I've made
 [Particles](./particles/Particles.html)
 
 [QMBL to CSV Converter](./qmbl/QMBLConverter.html)
+
+[Snake](./snake/snake.html)
