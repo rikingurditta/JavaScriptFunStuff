@@ -8,13 +8,13 @@ const width = canvas.width / 16;
 const height  = canvas.height / 16;
 const cellWidth = canvas.width / width;
 const cellHeight = canvas.height / height;
+const dt = 1000/10;
+let minFood = 10;
 
-var keysDown = [];
-
+const keysDown = [];
 addEventListener('keydown', function (e) {
     keysDown[e.keyCode] = true;
 }, false);
-
 addEventListener('keyup', function (e) {
     keysDown[e.keyCode] = false;
 }, false);
@@ -24,18 +24,20 @@ class Vec2 {
         this.x = x;
         this.y = y;
     }
+
+    equals(other) {
+        return this.x == other.x && this.y == other.y;
+    }
 }
 
 let mainInterval;
 let playing;
-let dt = 1000/10;
 
 let snake = [new Vec2()];
 // replace with ring buffer probably
 let dirs = [new Vec2(1, 0)];
 
 let food = [new Vec2(width / 2, height / 2)];
-let minFood = 1;
 
 function update() {
     let headDir = dirs[0];
@@ -71,8 +73,19 @@ function update() {
             fi++;
         }
     }
-    if (food.length < minFood) {
-        food.push(new Vec2(Math.floor(Math.random() * width), Math.floor(Math.random() * height)));
+    while (food.length < minFood) {
+        let newFood;
+        let overlaps = true;
+        while (overlaps) {
+            newFood = new Vec2(Math.floor(Math.random() * width), Math.floor(Math.random() * height));
+            overlaps = false;
+            for (let s of snake) {
+                if (newFood.equals(s)) {
+                    overlaps = true;
+                }
+            }
+        }
+        food.push(newFood);
     }
     for (let i = 1; i < snake.length; i++) {
         if (head.x == snake[i].x && head.y == snake[i].y) {
