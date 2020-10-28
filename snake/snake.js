@@ -157,6 +157,19 @@ function draw() {
         context.fillStyle = 'green';
         context.fillRect(s.x * cellWidth, s.y * cellHeight, cellWidth, cellHeight);
     }
+    // draw eyes
+    let sum = dirs[0].x + dirs[0].y;
+    let diff = dirs[0].x - dirs[0].y;
+    let eyeSize = 2;
+    context.fillStyle = 'black';
+    let headCentre = new Vec2(snake[0].x * cellWidth + cellWidth / 2,
+        snake[0].y * cellHeight + cellHeight / 2);  // centre of head
+    context.fillRect(headCentre.x + sum * cellWidth / 4 - eyeSize / 2,
+        headCentre.y + sum * cellHeight / 4 - eyeSize / 2,
+        eyeSize, eyeSize);
+    context.fillRect(headCentre.x + diff * cellWidth / 4 - eyeSize / 2,
+        headCentre.y - diff * cellHeight / 4 - eyeSize / 2,
+        eyeSize, eyeSize);
     // display scores
     context.fillStyle = 'white';
     context.font = 'bold 12px Courier New';
