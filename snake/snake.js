@@ -17,6 +17,11 @@ const cellHeight = canvas.height / height;
 const dt = 1000/10;
 let minFood = 10;
 
+if (localStorage.getItem('high_score') == null) {
+    localStorage.setItem('high_score', '0');
+}
+currHighScore = localStorage.getItem('high_score');
+
 // store last key pressed
 let lastKey = null;
 addEventListener('keydown', function (e) {
@@ -67,7 +72,7 @@ function update() {
     }
     // if escape key pressed, stop game
     if (lastKey == KEY_ESC) {
-        clearInterval(mainInterval);
+        endGame();
     }
     // reset last key
     lastKey = null;
@@ -129,8 +134,12 @@ function update() {
     // start loop at 3 because impossble to hit first 3 segments
     for (let i = 3; i < snake.length; i++) {
         if (head.equals(snake[i])) {
-            clearInterval(mainInterval);
+            endGame();
         }
+    }
+
+    if (snake.length > currHighScore) {
+        currHighScore = snake.length;
     }
 }
 
@@ -148,11 +157,21 @@ function draw() {
         context.fillStyle = 'green';
         context.fillRect(s.x * cellWidth, s.y * cellHeight, cellWidth, cellHeight);
     }
+    // display scores
+    context.fillStyle = 'white';
+    context.font = 'bold 12px Courier New';
+    context.fillText('Score: ' + snake.length, 2, 12);
+    context.fillText('High score: ' + currHighScore, 2, 24);
 }
 
 function mainLoop() {
     update();
     draw();
+}
+
+function endGame() {
+    clearInterval(mainInterval);
+    localStorage.setItem('high_score', '' + currHighScore)
 }
 
 mainInterval = setInterval(mainLoop, dt);
