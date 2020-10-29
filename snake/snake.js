@@ -1,8 +1,7 @@
-const canvas = document.createElement('canvas');
+const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
 canvas.width = 512;
 canvas.height = 512;
-document.body.appendChild(canvas);
 
 const KEY_LEFT = 37;
 const KEY_RIGHT = 39;
