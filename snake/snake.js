@@ -1,7 +1,7 @@
 const canvas = document.createElement('canvas');
 const context = canvas.getContext('2d');
-canvas.width = 256;
-canvas.height = 256;
+canvas.width = 512;
+canvas.height = 512;
 document.body.appendChild(canvas);
 
 const KEY_LEFT = 37;
@@ -10,12 +10,13 @@ const KEY_UP = 38;
 const KEY_DOWN = 40;
 const KEY_ESC = 27;
 
-const width = canvas.width / 16;
-const height  = canvas.height / 16;
-const cellWidth = canvas.width / width;
-const cellHeight = canvas.height / height;
+const GRID_WIDTH = 16;
+const GRID_HEIGHT  = 16;
+const CELL_WIDTH = canvas.width / GRID_WIDTH;
+const CELL_HEIGH = canvas.height / GRID_HEIGHT;
 const dt = 1000/10;
-let minFood = 10;
+
+let MIN_FOOD = 10;
 
 if (localStorage.getItem('high_score') == null) {
     localStorage.setItem('high_score', '0');
@@ -54,7 +55,7 @@ let snake = [new Vec2()];
 // replace with ring buffer probably
 let dirs = [new Vec2(1, 0)];
 
-let food = [new Vec2(width / 2, height / 2)];
+let food = [new Vec2(GRID_WIDTH / 2, GRID_HEIGHT / 2)];
 
 function update() {
     // by default, head keeps going in same direction
@@ -89,8 +90,8 @@ function update() {
     // move all segments
     for (let i = 0; i < snake.length; i++) {
         let newPos = snake[i].add(dirs[i]);
-        newPos.x = (newPos.x + width) % width;
-        newPos.y = (newPos.y + height) % height;
+        newPos.x = (newPos.x + GRID_WIDTH) % GRID_WIDTH;
+        newPos.y = (newPos.y + GRID_HEIGHT) % GRID_HEIGHT;
         snake[i] = newPos;
     }
 
@@ -112,13 +113,14 @@ function update() {
 
     // if we change `if` to `while` then food will all be calculated at once
     // when game starts, but i like the way it looks with `if`
-    if (food.length < minFood) {  // if not enough food exists, create new food
+    if (food.length < MIN_FOOD) {  // if not enough food exists, create new food
         let newFood;
         // keep trying to pick position of new food until we find position that
         // does not overlap with another food or the snake itself
         let overlaps = true;
         while (overlaps) {
-            newFood = new Vec2(Math.floor(Math.random() * width), Math.floor(Math.random() * height));
+            newFood = new Vec2(Math.floor(Math.random() * GRID_WIDTH),
+                Math.floor(Math.random() * GRID_HEIGHT));
             overlaps = false;
             for (let s of snake)
                 if (newFood.equals(s))
@@ -150,25 +152,25 @@ function draw() {
     // draw food
     for (let f of food) {
         context.fillStyle = 'red';
-        context.fillRect(f.x * cellWidth, f.y * cellHeight, cellWidth, cellHeight);
+        context.fillRect(f.x * CELL_WIDTH, f.y * CELL_HEIGH, CELL_WIDTH, CELL_HEIGH);
     }
     // draw snake
     for (let s of snake) {
         context.fillStyle = 'green';
-        context.fillRect(s.x * cellWidth, s.y * cellHeight, cellWidth, cellHeight);
+        context.fillRect(s.x * CELL_WIDTH, s.y * CELL_HEIGH, CELL_WIDTH, CELL_HEIGH);
     }
     // draw eyes
     let sum = dirs[0].x + dirs[0].y;
     let diff = dirs[0].x - dirs[0].y;
-    let eyeSize = 2;
+    let eyeSize = CELL_HEIGH / 8;
     context.fillStyle = 'black';
-    let headCentre = new Vec2(snake[0].x * cellWidth + cellWidth / 2,
-        snake[0].y * cellHeight + cellHeight / 2);  // centre of head
-    context.fillRect(headCentre.x + sum * cellWidth / 4 - eyeSize / 2,
-        headCentre.y + sum * cellHeight / 4 - eyeSize / 2,
+    let headCentre = new Vec2(snake[0].x * CELL_WIDTH + CELL_WIDTH / 2,
+        snake[0].y * CELL_HEIGH + CELL_HEIGH / 2);  // centre of head
+    context.fillRect(headCentre.x + sum * CELL_WIDTH / 4 - eyeSize / 2,
+        headCentre.y + sum * CELL_HEIGH / 4 - eyeSize / 2,
         eyeSize, eyeSize);
-    context.fillRect(headCentre.x + diff * cellWidth / 4 - eyeSize / 2,
-        headCentre.y - diff * cellHeight / 4 - eyeSize / 2,
+    context.fillRect(headCentre.x + diff * CELL_WIDTH / 4 - eyeSize / 2,
+        headCentre.y - diff * CELL_HEIGH / 4 - eyeSize / 2,
         eyeSize, eyeSize);
     // display scores
     context.fillStyle = 'white';
