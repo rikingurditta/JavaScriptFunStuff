@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<HTML>
+    <head>
+        <title>2D Fluid!</title>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        (Incomplete) 2D fluid simulation by <a href="https://rikingurditta.github.io/" target="_blank">Rikin Gurditta</a> based on <a href="https://www.autodesk.com/research/publications/real-time-fluid-dynamics">Real Time Fluid Dynamics for Games</a> and <a href="https://mikeash.com/pyblog/fluid-simulation-for-dummies.html">Fluid Simulation for Dummies</a>
+        <br>
+        <canvas id="fluid2d-canvas"></canvas>
+    </body>
+    <style type="text/css">
+        body {
+            font-family: 'Consolas'
+        }
+    </style>
+    <script type="text/javascript" src="fluid2d.js"></script>
+    <script type="text/javascript">
+        let canvas = document.getElementById("fluid2d-canvas");
+        // constructor(size, diffusion, viscosity, dt, canvas, gridSize) {
+        let f = new FluidSquare(100, 0.001, 0.1, 0.1, canvas, 4);
+        f.start();
+    </script>
+</HTML>
