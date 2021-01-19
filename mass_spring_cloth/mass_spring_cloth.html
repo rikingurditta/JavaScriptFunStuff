@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mass-Spring Cloth Simulation</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        #info {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display: block;
+            color: white;
+            font-size: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">Press space to start</div>
+    <script type="module">
+        // Find the latest version by visiting https://unpkg.com/three. The URL will
+        // redirect to the newest stable release.
+        import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+        import { OrbitControls } from 'https://unpkg.com/three/examples/jsm/controls/OrbitControls.js';
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75,
+            window.innerWidth / window.innerHeight, 0.1, 1000 );
+        camera.position.z += 5;
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+        const floor_geometry = new THREE.PlaneGeometry(10, 10);
+        const floor = new THREE.Mesh(floor_geometry, new THREE.MeshBasicMaterial({color: 0xffffff, side: THREE.DoubleSide}));
+        scene.add(floor);
+        floor.position.set(0, -5, 0);
+        floor.rotation.set(Math.PI / 2, 0, 0)
+
+        let SEGMENTS = 10;
+        let STIFFNESS = 25;
+        let POINT_MASS = 1;
+        const geometry = new THREE.PlaneGeometry(2, 2, SEGMENTS, SEGMENTS);
+        const square = new THREE.Mesh(geometry,
+            new THREE.MeshBasicMaterial({color: 0x0000ff, side: THREE.DoubleSide, wireframe: true}));
+        scene.add(square);
+
+        let f_gravity = new THREE.Vector3(0, -9.8, 0);
+
+        let V = geometry.vertices;
+        let E = getEdges(geometry);
+        let restLengths = [];
+        let currLengths = [];
+        for (let i = 0; i < E.length; i += 2) {
+            restLengths.push(0);
+            currLengths.push(0);
+        }
+        edgeLengths(restLengths, geometry);
+        for (let i = 0; i < V.length; i++) {
+            V[i].applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+            V[i].applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4);
+        }
+        let velocities = [];
+        let forces = [];
+        for (let i = 0; i < V.length; i++) {
+            velocities.push(new THREE.Vector3());
+            forces.push(new THREE.Vector3());
+        }
+
+        let simulating = false;
+        addEventListener('keydown', (e) => {
+            if (e.keyCode == 32) {
+                simulating = true;
+                document.getElementById('info').style.visibility = 'hidden';
+            }
+        }, false);
+
+        let count = 0;
+        let clock = new THREE.Clock();
+        function animate() {
+            let dt = clock.getDelta() * 5;
+            if (simulating)
+                simulate(dt);
+            // console.log(dt);
+            // if (count++ < 100)
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        function simulate(dt) {
+            let c = 0;
+            for (let i = 0; i < E.length; i += 2) {
+                let l0 = restLengths[c];
+                let a = E[i];
+                let b = E[i+1];
+                let q_a = V[a];
+                let q_b = V[b];
+                let qdot_a = velocities[a];
+                let qdot_b = velocities[a];
+                let d = new THREE.Vector3().copy(q_b).sub(q_a);
+
+                // runge-kutta time integration
+                let d1 = new THREE.Vector3().copy(q_b).sub(q_a);
+                let acc_a1 = new THREE.Vector3().copy(d1).normalize().multiplyScalar(STIFFNESS * (d1.length() - l0)).sub(f_gravity).multiplyScalar(1 / POINT_MASS);
+
+                let dvel_2 = new THREE.Vector3().copy(acc_a1).multiplyScalar(dt / 2);
+                let vel_a2 = new THREE.Vector3().copy(qdot_a).add(dvel_2);
+                let vel_b2 = new THREE.Vector3().copy(qdot_b).sub(dvel_2);
+                let q_a2 = new THREE.Vector3().copy(q_a).add(new THREE.Vector3().copy(qdot_a).multiplyScalar(dt / 2));
+                let q_b2 = new THREE.Vector3().copy(q_b).add(new THREE.Vector3().copy(qdot_b).multiplyScalar(dt / 2));
+                let d2 = new THREE.Vector3().copy(q_b2).sub(q_a2);
+                let acc_a2 = new THREE.Vector3().copy(d2).normalize().multiplyScalar(STIFFNESS * (d2.length() - l0)).sub(f_gravity).multiplyScalar(1 / POINT_MASS);
+
+                let dvel_3 = new THREE.Vector3().copy(acc_a2).multiplyScalar(dt / 2);
+                let vel_a3 = new THREE.Vector3().copy(qdot_a).add(dvel_3);
+                let vel_b3 = new THREE.Vector3().copy(qdot_b).sub(dvel_3);
+                let q_a3 = new THREE.Vector3().copy(q_a).add(new THREE.Vector3().copy(vel_a2).multiplyScalar(dt / 2));
+                let q_b3 = new THREE.Vector3().copy(q_b).add(new THREE.Vector3().copy(vel_b2).multiplyScalar(dt / 2));
+                let d3 = new THREE.Vector3().copy(q_b3).sub(q_a3);
+                let acc_a3 = new THREE.Vector3().copy(d3).normalize().multiplyScalar(STIFFNESS * (d3.length() - l0)).sub(f_gravity).multiplyScalar(1 / POINT_MASS);
+
+                let dvel_4 = new THREE.Vector3().copy(acc_a3).multiplyScalar(dt);
+                let vel_a4 = new THREE.Vector3().copy(qdot_a).add(dvel_4);
+                let vel_b4 = new THREE.Vector3().copy(qdot_b).sub(dvel_4);
+                let q_a4 = new THREE.Vector3().copy(q_a).add(new THREE.Vector3().copy(vel_a3).multiplyScalar(dt));
+                let q_b4 = new THREE.Vector3().copy(q_b).add(new THREE.Vector3().copy(vel_b3).multiplyScalar(dt));
+                let d4 = new THREE.Vector3().copy(q_b4).sub(q_a4);
+                let acc_a4 = new THREE.Vector3().copy(d4).normalize().multiplyScalar(STIFFNESS * (d4.length() - l0)).sub(f_gravity).multiplyScalar(1 / POINT_MASS);
+
+                q_a.add(new THREE.Vector3().copy(qdot_a).add(vel_a2.add(vel_a3).multiplyScalar(2)).add(vel_a4).multiplyScalar(dt / 6).multiplyScalar(a > SEGMENTS));
+                q_b.add(new THREE.Vector3().copy(qdot_b).add(vel_b2.add(vel_b3).multiplyScalar(2)).add(vel_b4).multiplyScalar(dt / 6).multiplyScalar(b > SEGMENTS));
+
+                let dv = acc_a1.add(acc_a2.add(acc_a3).multiplyScalar(2)).add(acc_a4).multiplyScalar(dt / 6);
+                qdot_a.add(dv);
+                qdot_b.sub(dv);
+                // console.log(dv.x, dv.y, dv.z);
+
+                // // console.log('d', d.x, d.y, d.z);
+                // // forces[a].copy(d).normalize().multiplyScalar(d.length() - restLengths[c++]);
+                // // forces[b].copy(forces[a]).negate();
+                // let df = new THREE.Vector3().copy(d).normalize().multiplyScalar(STIFFNESS * (d.length() - l0)).sub(f_gravity).multiplyScalar(dt);
+                // // console.log('df', df.x, df.y, df.z)
+                // velocities[a].add(df).multiplyScalar(a > SEGMENTS);
+                // velocities[b].sub(df).multiplyScalar(b > SEGMENTS);
+                // q_a.add(new THREE.Vector3().copy(velocities[a]).multiplyScalar(dt));
+                // // console.log(a, q_a.x, q_a.y, q_a.z);
+                // q_b.add(new THREE.Vector3().copy(velocities[b]).multiplyScalar(dt));
+                // // console.log();
+
+                c++;
+            }
+            geometry.verticesNeedUpdate = true;
+        }
+
+        // return array of edges - 1d array of size 2#E, where each edge is (e[2i], e[2i+1])
+        function getEdges(geometry) {
+            let edges = {};
+            for (let i = 0; i < geometry.vertices.length; i++) {
+                edges[i] = new Set();
+            }
+            geometry.faces.forEach((face) => {
+                if (face.a < face.b) {
+                    if (face.a < face.c) {  // a < b and a < c
+                        edges[face.a].add(face.b);
+                        edges[face.a].add(face.c);
+                    } else {  // c < a < b
+                        edges[face.c].add(face.a);
+                        edges[face.c].add(face.b);
+                    }
+                } else {
+                    if (face.b < face.c) {  // b < a and b < c
+                        edges[face.b].add(face.a);
+                        edges[face.b].add(face.c);
+                    } else {  // c < b < a
+                        edges[face.c].add(face.a);
+                        edges[face.c].add(face.b);
+                    }
+                }
+            });
+            let out = [];
+            for (let i = 0; i < geometry.vertices.length; i++) {
+                edges[i].forEach((j) => {
+                    out.push(i);
+                    out.push(j);
+                });
+            }
+            return out;
+        }
+
+        // fill array of edge lengths
+      function edgeLengths(arr, geometry) {
+            let edges = getEdges(geometry);
+            let v = geometry.vertices;
+            for (let i = 0; i < edges.length / 2; i++) {
+                arr[i] = v[edges[2*i]].distanceTo(v[edges[2*i+1]]);
+            }
+        }
+    </script>
+</body>
+</html>
