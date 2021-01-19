@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <div id="info">Press space to start</div>
+    <div id="info">Click/tap here to start</div>
     <script type="module">
         // Find the latest version by visiting https://unpkg.com/three. The URL will
         // redirect to the newest stable release.
@@ -75,11 +75,9 @@
         }
 
         let simulating = false;
-        addEventListener('keydown', (e) => {
-            if (e.keyCode == 32) {
-                simulating = true;
-                document.getElementById('info').style.visibility = 'hidden';
-            }
+        addEventListener('mousedown', (e) => {
+            simulating = true;
+            document.getElementById('info').style.visibility = 'hidden';
         }, false);
 
         let count = 0;
