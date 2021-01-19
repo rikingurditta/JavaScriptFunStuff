@@ -10,3 +10,5 @@ Fun JavaScript stuff that I've made
 [Snake](./snake/snake.html)
 
 [2D Fluid](./fluid2d/fluid2d.html)
+
+[Mass-Spring Cloth](./mass_spring_cloth/mass_spring_cloth.html)
