@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+</head>
+<body>
+</body>
+<script type="text/javascript">
+// set up the canvas
+var canvas = document.createElement('canvas');
+var context = canvas.getContext('2d');
+canvas.width = screen.width;
+canvas.height = screen.height;
+document.body.appendChild(canvas);
+
+var ITERATIONS = 12
+var SCALE = 2
+
+var all_headings = [0]
+var headings = [0]
+var x = canvas.width / 2;
+var y = canvas.height / 2;
+context.beginPath();
+context.moveTo(x, y);
+
+context.lineWidth = 1;
+
+var h = 0;
+
+function main() {
+	console.log('\th', h);
+	x += SCALE * Math.cos(Math.PI * headings[h] / 180);
+	y += SCALE * Math.sin(Math.PI * headings[h] / 180);
+	context.lineTo(x, y);
+	console.log('\tx, y', x, y);
+	context.stroke();
+	h++;
+	if (h >= headings.length) {
+		headings = [];
+		let old_length = all_headings.length;
+	    for (j = old_length - 1; j >= 0; j--) {
+	    	// console.log('\tj', j);
+	    	headings.push(all_headings[j] + 90);
+	    	all_headings.push(all_headings[j] + 90);
+	    }
+	    h = 0;
+	}
+	requestAnimationFrame(main);
+}
+
+main();
+</script>
+<style>
+canvas {
+	outline: none;
+}
+</style>
+</html>
