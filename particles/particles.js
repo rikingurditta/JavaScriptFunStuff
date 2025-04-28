@@ -8,16 +8,20 @@ var h = canvas.height = 1024;
 document.body.appendChild(canvas);
 
 var n = 4096; // number of dots
-var dim = 3; // height/width of dot (square)
+var dim = 5; // height/width of dot (square)
 
-var qt_size = 1;
+var qt_size = 4;
 
-class Ice {
+class Boundingbox {
 	constructor(x, y, width, height) {
 		this.x = x;
 		this.y = y;
-		this.stuck = false;
 		this.idk = false;
+
+		this.l = x;
+		this.r = x + width;
+		this.b = y;
+		this.t = y + height;
 	}
 }
 
@@ -38,10 +42,7 @@ class Quadtree {
 	}
 
 	in_range(x, y) {
-		if (x >= this.x && y >= this.y && x < this.x + this.width && y < this.y + this.height) {
-			return true;
-		}
-		return false;
+		return x >= this.x && y >= this.y && x < this.x + this.width && y < this.y + this.height;
 	}
 
 	add(x, y, item) {
@@ -50,7 +51,7 @@ class Quadtree {
 		if (!this.in_range(x, y)) {
 			let str = "out of range: item (" + x + ", " + y + ") "
 				    + "not in range of quadtree [" + this.x + ", " + (this.x + this.width)
-				    + "] x [" + this.y + ", " + (this.y + this.height) + "]";
+				    + ") x [" + this.y + ", " + (this.y + this.height) + ")";
 			throw new Error(str);
 		} else if (this.is_leaf && this.num_items < this.max_items) {
 			this.items.push(item);
@@ -62,11 +63,11 @@ class Quadtree {
 			this.subs.push(new Quadtree(this.x + sub_w, this.y,         sub_w, sub_h, this.max_items));
 			this.subs.push(new Quadtree(this.x,         this.y + sub_h, sub_w, sub_h, this.max_items));
 			this.subs.push(new Quadtree(this.x + sub_w, this.y + sub_h, sub_w, sub_h, this.max_items));
-			this.num_items = 0;
 			this.is_leaf = false;
 			for (let i = 0; i < this.num_items; i++) {
 				this.add(this.item_x[i], this.item_y[i], this.items[i]);
 			}
+			this.num_items = 0;
 			this.add(x, y, item);
 		} else {
 			let sub_index = 0;
@@ -87,7 +88,7 @@ class Quadtree {
 		}
 		if (this.is_leaf) {
 			str += "quadtree [" + this.x + ", " + (this.x + this.width)
-				   + "] x [" + this.y + ", " + (this.y + this.height) + "]";
+				   + ") x [" + this.y + ", " + (this.y + this.height) + ")";
 
 			if (this.num_items > 0) {
 				str += " with items:"
@@ -97,7 +98,7 @@ class Quadtree {
 			}
 		} else {
 			str += "quadtree [" + this.x + ", " + (this.x + this.width)
-				   + "] x [" + this.y + ", " + (this.y + this.height) + "] with subtrees:\n";
+				   + ") x [" + this.y + ", " + (this.y + this.height) + ") with subtrees:\n";
 			str += this.subs[0].print(depth+1) + "\n";
 			str += this.subs[1].print(depth+1) + "\n";
 			str += this.subs[2].print(depth+1) + "\n";
@@ -124,27 +125,27 @@ class Quadtree {
 			for (let item of this.items) {
 				movingIce[item].idk = true;
 			}
-			return this.items;
+			return new Set(this.items);
 		}
-		let out = [];
+		let out = new Set();
 		let bools = [true, true, true, true];
 		if (x < this.x + 0.25 * this.width) {
 			bools[1] = false;
 			bools[3] = false;
-		} else if (x >= this.x + 0.75 * this.width) {
+		} else if (x > this.x + 0.75 * this.width) {
 			bools[0] = false;
 			bools[2] = false;
 		}
 		if (y < this.y + 0.25 * this.height) {
 			bools[2] = false;
 			bools[3] = false;
-		} else if (y >= this.y + 0.75 * this.height) {
+		} else if (y > this.y + 0.75 * this.height) {
 			bools[0] = false;
 			bools[1] = false;
 		}
 		for (let i = 0; i < 4; i++) {
 			if (bools[i]) {
-				out.push(...this.subs[i].get_neighbourhood(x, y));
+				out = out.union(this.subs[i].get_neighbourhood(x, y));
 			}
 		}
 		return out;
@@ -174,14 +175,14 @@ var movingIce = new Array(n-1);
 var movingNum = n-1;
 
 var stuckIce = new Array(n);
-stuckIce[0] = new Ice(w / 2, h / 2, dim, dim);
+stuckIce[0] = new Boundingbox(w / 2, h / 2, dim, dim);
 var stuckNum = 1;
 
 for (let i = 0; i < n - 1; i += 1) {
 	// randomly decide the rest
 	let x = Math.floor(Math.random() * w * 1 / 2) + w / 4;
 	let y = Math.floor(Math.random() * h * 1 / 2) + h / 4;
-	movingIce[i] = new Ice(x, y, dim, dim);
+	movingIce[i] = new Boundingbox(x, y, dim, dim);
 }
 
 function update_with_quadtree() {
@@ -193,13 +194,14 @@ function update_with_quadtree() {
 	}
 
 	let stuck_indices = new Set();
+	let nbhd = new Set();
 
 	for (let i = 0; i < stuckNum; i++) {
 		stuck = stuckIce[i];
-		nbhd = qt.get_neighbourhood(stuck.x, stuck.y)
-				.concat(qt.get_neighbourhood(stuck.x + dim, stuck.y))
-				.concat(qt.get_neighbourhood(stuck.x, stuck.y + dim))
-				.concat(qt.get_neighbourhood(stuck.x + dim, stuck.y + dim));
+		nbhd = nbhd.union(qt.get_neighbourhood(stuck.l, stuck.b))
+				.union(qt.get_neighbourhood(stuck.r, stuck.b))
+				.union(qt.get_neighbourhood(stuck.l, stuck.t))
+				.union(qt.get_neighbourhood(stuck.r, stuck.t));
 		for (let m_index of nbhd) {
 			nonStuck = movingIce[m_index];
 			let overlap = true;
@@ -220,6 +222,7 @@ function update_with_quadtree() {
 		stuckNum += 1;
 		movingIce[index] = null;
 	};
+	console.log(stuckNum, stuckIce);
 
 	let k = 0;
 	while (k < movingNum) {
@@ -262,11 +265,7 @@ function update() {
 function render () {
 	context.clearRect(0, 0, w, h); // reset the canvas each time
 
-	context.strokeStyle = 'lightgray';
-	context.beginPath();
 	qt.draw();
-	context.lineWidth = 1;
-	context.stroke();
 
 	// context.fillStyle = 'black';
 	for (let i = 0; i < movingNum; i++) {
@@ -284,10 +283,14 @@ function render () {
 }
 
 
+let frame = 0;
 function main () { // runs game
 	update_with_quadtree();
 	render();
-	requestAnimationFrame(main);
+	// if (frame < 100) {
+		requestAnimationFrame(main);
+	// }
+	frame++;
 }
 
 main();
