@@ -16,9 +16,8 @@ class Ice {
 	constructor(x, y, width, height) {
 		this.x = x;
 		this.y = y;
-		this.width = dim;
-		this.height = dim;
 		this.stuck = false;
+		this.idk = false;
 	}
 }
 
@@ -35,6 +34,7 @@ class Quadtree {
 		this.num_items = 0;
 		this.max_items = max_items;
 		this.is_leaf = true;
+		this.idk = false;
 	}
 
 	in_range(x, y) {
@@ -120,6 +120,10 @@ class Quadtree {
 
 	get_neighbourhood(x, y) {
 		if (this.is_leaf) {
+			this.idk = true;
+			for (let item of this.items) {
+				movingIce[item].idk = true;
+			}
 			return this.items;
 		}
 		let out = [];
@@ -147,30 +151,20 @@ class Quadtree {
 	}
 
 	draw() {
+		if (this.idk) {
+			context.strokeStyle = 'orange'
+		} else {
+			context.strokeStyle = 'lightgray'
+		}
+		context.lineWidth = 1;
+		context.beginPath();
 		context.rect(this.x, this.y, this.width, this.height);
+		context.stroke();
 		for (let sub of this.subs) {
 			sub.draw();
 		};
 	}
 }
-
-q = new Quadtree(0, 0, 1, 1, 2);
-q.add(0.1, 0.1, "a");
-console.log("a")
-q.add(0.2, 0.2, "b");
-console.log("b")
-q.add(0.2, 0.1, "c");
-console.log("c")
-q.add(0.1, 0.2, "d");
-console.log("d")
-q.add(0.6, 0.2, "e");
-console.log("e")
-q.add(0.6, 0.1, "f");
-console.log("f")
-q.add(0.7, 0.8, "g");
-console.log("g")
-console.log(q.print());
-console.log(q.get_neighbourhood(0.1, 0.1));
 
 let qt = new Quadtree(0, 0, w, h, qt_size);
 
@@ -198,22 +192,30 @@ function update_with_quadtree() {
 		qt.add(m.x, m.y, i);
 	}
 
-	let new_stuck_indices = new Set();
+	let stuck_indices = new Set();
 
 	for (let i = 0; i < stuckNum; i++) {
 		stuck = stuckIce[i];
-		nbhd = qt.get_neighbourhood(stuck.x, stuck.y).concat(qt.get_neighbourhood(stuck.x + stuck.width, stuck.y))
-		.concat(qt.get_neighbourhood(stuck.x, stuck.y + stuck.height)).concat(qt.get_neighbourhood(stuck.x, stuck.y + stuck.height));
-		for (let j = 0; j < nbhd.length; j++) {
-			m_index = nbhd[j];
+		nbhd = qt.get_neighbourhood(stuck.x, stuck.y)
+				.concat(qt.get_neighbourhood(stuck.x + dim, stuck.y))
+				.concat(qt.get_neighbourhood(stuck.x, stuck.y + dim))
+				.concat(qt.get_neighbourhood(stuck.x + dim, stuck.y + dim));
+		for (let m_index of nbhd) {
 			nonStuck = movingIce[m_index];
-			if (stuck.x <= nonStuck.x + dim && stuck.x + dim >= nonStuck.x && stuck.y <= nonStuck.y + dim && stuck.y + dim >= nonStuck.y) { // and if they collide
-				new_stuck_indices.add(m_index);
+			let overlap = true;
+			if (stuck.x > nonStuck.x + dim
+				|| stuck.x + dim < nonStuck.x
+				|| stuck.y > nonStuck.y + dim
+				|| stuck.y + dim < nonStuck.y) {
+				overlap = false;
+			}
+			if (overlap) {
+				stuck_indices.add(m_index);
 			}
 		}
 	}
 
-	for (let index of new_stuck_indices) {
+	for (let index of stuck_indices) {
 		stuckIce[stuckNum] = movingIce[index];
 		stuckNum += 1;
 		movingIce[index] = null;
@@ -266,8 +268,13 @@ function render () {
 	context.lineWidth = 1;
 	context.stroke();
 
-	context.fillStyle = 'black';
+	// context.fillStyle = 'black';
 	for (let i = 0; i < movingNum; i++) {
+		if (movingIce[i].idk) {
+			context.fillStyle = 'blue';
+		} else {
+			context.fillStyle = 'black';
+		}
 		context.fillRect(movingIce[i].x, movingIce[i].y, dim, dim);
 	};
 	context.fillStyle = 'red';
